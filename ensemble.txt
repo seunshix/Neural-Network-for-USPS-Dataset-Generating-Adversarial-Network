@@ -1,0 +1,142 @@
+# model 1-6 are 6 models for the ensemble
+def model1():
+	model = Sequential()
+	model.add(LocallyConnected2D(15, (4, 4), input_shape=(16, 16, 1)))
+	model.add(MaxPooling2D())
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(100, activation='tanh'))
+	model.add(Dense(10, activation='softmax'))
+	sgd = optimizers.SGD(lr=0.1, momentum=0.5)
+
+	# Compile model
+	model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+	return model
+
+def model2():
+	model = Sequential()
+	model.add(LocallyConnected2D(15, (4, 4), input_shape=(16, 16, 1)))
+	model.add(MaxPooling2D())
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(100, activation='sigmoid'))
+	model.add(Dense(10, activation='softmax'))
+	sgd = optimizers.SGD(lr=0.1, momentum=0.5)
+
+	# Compile model
+	model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+	return model
+
+def model3():
+	model = Sequential()
+	model.add(LocallyConnected2D(15, (4, 4), input_shape=(16, 16, 1)))
+	model.add(MaxPooling2D())
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(100, activation='tanh'))
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(10, activation='softmax'))
+	sgd = optimizers.SGD(lr=0.1, momentum=0.5)
+
+	# Compile model
+	model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+	return model
+
+def model4():
+	model = Sequential()
+	model.add(Conv2D(32, (5, 5), input_shape=(16, 16, 1), activation='relu'))
+	model.add(MaxPooling2D())
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(100, activation='tanh'))
+	model.add(Dense(10, activation='softmax'))
+	sgd = optimizers.SGD(lr=0.1,  momentum=0.5)
+
+	# Compile model
+	model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+	return model
+def model5():
+	model = Sequential()
+	model.add(Conv2D(32, (5, 5), input_shape=(16, 16, 1), activation='relu'))
+	model.add(MaxPooling2D())
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(100, activation='sigmoid'))
+	model.add(Dense(10, activation='softmax'))
+	sgd = optimizers.SGD(lr=0.1, momentum=0.5)
+
+	# Compile model
+	model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+	return model
+
+def model6():
+	model = Sequential()
+	model.add(Conv2D(32, (5, 5), input_shape=(16, 16, 1), activation='relu'))
+	model.add(MaxPooling2D())
+	model.add(Flatten())
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(100, activation='tanh'))
+	model.add(Dense(100, activation='relu'))
+	model.add(Dense(10, activation='softmax'))
+	sgd = optimizers.SGD(lr=0.1, momentum=0.5)
+
+	# Compile model
+	model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
+
+	return model
+
+def ensemble_model():
+
+	mod1=model1()
+	mod2=model2()
+	mod3=model3()
+	mod4=model4()
+	mod5=model5()
+	mod6=model6()
+
+
+	mod1.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=20, batch_size=16)
+	mod2.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=20, batch_size=16)
+	mod3.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=20, batch_size=16)
+	mod4.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=20, batch_size=16)
+	mod5.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=20, batch_size=16)
+	mod6.fit(xtrain, ytrain, validation_data=(xtest, ytest), epochs=20, batch_size=16)
+
+	# For the ensemble, I found the average of each y label in each model 1-6.
+	y1=np.asarray(mod1.predict(xtrain))
+	y2=np.asarray(mod2.predict(xtrain))
+	y3=np.asarray(mod3.predict(xtrain))
+	y4=np.asarray(mod4.predict(xtrain))
+	y5=np.asarray(mod5.predict(xtrain))
+	y6=np.asarray(mod6.predict(xtrain))
+
+	y_ensemble=[]
+
+	for i in range(y1.shape[0]):
+		y_row=[]
+		for j in range(y1.shape[1]):
+			y_row.append(((y1[i][j]+y2[i][j]+y3[i][j]+y4[i][j]+y5[i][j]+y6[i][j])*1.0)/6)
+		y_ensemble.append(np.argmax(y_row))
+	print("Train Accuracy:", metrics.accuracy_score(y_train, y_ensemble))
+
+	y1=np.asarray(mod1.predict(xtest))
+	y2=np.asarray(mod2.predict(xtest))
+	y3=np.asarray(mod3.predict(xtest))
+	y4=np.asarray(mod4.predict(xtest))
+	y5=np.asarray(mod5.predict(xtest))
+	y6=np.asarray(mod6.predict(xtest))
+
+	y_ensemble=[]
+
+	for i in range(y1.shape[0]):
+		y_row=[]
+		for j in range(y1.shape[1]):
+			y_row.append(((y1[i][j]+y2[i][j]+y3[i][j]+y4[i][j]+y5[i][j]+y6[i][j])*1.0)/6)
+		y_ensemble.append(np.argmax(y_row))
+	print("Test Accuracy:", metrics.accuracy_score(y_test, y_ensemble))
+	

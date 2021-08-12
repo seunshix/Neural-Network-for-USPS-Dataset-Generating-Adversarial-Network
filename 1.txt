@@ -1,0 +1,42 @@
+# define the size of the latent space
+latent_dim = 100
+# define the generator model
+model = generator(latent_dim)
+# summarize the model
+model.summary()
+# plot the model
+plot_model(model, to_file='generator_plot.png', show_shapes=True, show_layer_names=True)
+
+
+from matplotlib import pyplot
+
+# size of the latent space
+latent_dim = 100
+# define the discriminator model
+model = generator(latent_dim)
+# generate samples
+n_samples = 25
+X, _ = generate_fake_samples(model, latent_dim, n_samples)
+# plot the generated samples
+for i in range(n_samples):
+	# define subplot
+	pyplot.subplot(5, 5, 1 + i)
+	# turn off axis labels
+	pyplot.axis('off')
+	# plot single image
+	pyplot.imshow(X[i, :, :, 0], cmap='gray_r')
+# show the figure
+pyplot.show()
+
+# size of the latent space
+latent_dim = 100
+# create the discriminator
+d_model = discriminator()
+# create the generator
+g_model = generator(latent_dim)
+# create the gan
+gan_model = disGen(g_model, d_model)
+# summarize gan model
+gan_model.summary()
+# plot gan model
+plot_model(gan_model, to_file='gan_plot.png', show_shapes=True, show_layer_names=True)

@@ -1,0 +1,80 @@
+...
+def discriminator()
+  d_model = Sequential()
+  # downsample to 14x14
+  d_model.add(Conv2D(64, (3,3), strides=(2, 2), padding='same', input_shape=(28,28,3)))
+  d_model.add(LeakyReLU(alpha=0.2))
+  d_model.add(BatchNormalization())
+  # downsample to 7x7
+  d_model.add(Conv2D(64, (3,3), strides=(2, 2), padding='same'))
+  d_model.add(LeakyReLU(alpha=0.2))
+  d_model.add(BatchNormalization())
+  # classify
+d_model.add(Flatten())
+d_model.add(Dense(1, activation='sigmoid'))
+
+# compile model
+d_model.compile(loss='binary_crossentropy', optimizer='Adam')
+d_model.summary()
+
+...
+# define the generator model
+g_model = Sequential()
+# foundation for 7x7 image
+n_nodes = 64 * 7 * 7
+g_model.add(Dense(n_nodes, input_dim=100))
+g_model.add(LeakyReLU(alpha=0.2))
+g_model.add(BatchNormalization())
+g_model.add(Reshape((7, 7, 64)))
+# upsample to 14x14
+g_model.add(Conv2DTranspose(64, (3,3), strides=(2,2), padding='same'))
+g_model.add(LeakyReLU(alpha=0.2))
+g_model.add(BatchNormalization())
+# upsample to 28x28
+g_model.add(Conv2DTranspose(64, (3,3), strides=(2,2), padding='same'))
+g_model.add(LeakyReLU(alpha=0.2))
+g_model.add(BatchNormalization())
+g_model.add(Conv2D(3, (3,3), activation='tanh', padding='same'))
+g_model.summary()
+
+# create the composite model for training the generator
+generator = ...
+discriminator = ...
+...
+# make weights in the discriminator not trainable
+d_model.trainable = False
+
+# connect them
+#gd_model = tensorflow.keras.Sequential()
+gd_model = Sequential()
+# add generator
+gd_model.add(g_model)
+# add the discriminator
+gd_model.add(d_model)
+# compile model
+gd_model.compile(loss='binary_crossentropy', optimizer='Adam')
+#(lr=0.0002, beta_1=0.5)
+
+
+...
+# gan training algorithm
+discriminator = ...
+generator = ...
+gan_model = ...
+n_batch = 16
+latent_dim = 100
+for i in range(10000):
+  # get randomly selected 'real' samples
+  X_real, y_real = select_real_samples(dataset, n_batch)
+  # generate 'fake' example
+  X_fake, y_fake = generate_fake_samples(generator, latent_dim, n_batch)
+  # create training set for the discriminator
+  X, y = vstack((X_real, X_fake)), vstack((y_real, y_fake))
+  # update discriminator model weights
+  d_loss = discriminator.train_on_batch(X, y)
+  # prepare points in latent space as input for the generator
+  X_gan = generate_latent_points(latent_dim, n_batch)
+  # create inverted labels for the fake samples
+  y_gan = ones((n_batch, 1))
+  # update the generator via the discriminator's error
+  g_loss = gan_model.train_on_batch(X_gan, y_gan)
